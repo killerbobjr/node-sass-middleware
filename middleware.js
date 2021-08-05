@@ -270,7 +270,7 @@ module.exports = function(options) {
         renderOptions.outFile = options.outFile || cssPath;
         renderOptions.includePaths = [sassDir].concat(options.includePaths || []);
 
-        style.render(renderOptions, done);
+        style.render(renderOptions, done, req);
       });
     };
 
