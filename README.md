@@ -106,6 +106,7 @@ http.createServer(app).listen(3000);
  *    `log`            - `function(severity, key, val, message)`, used to log data instead of the default `console.error`. "severity" matches [Winston](https://www.npmjs.com/package/winston) severity levels.
  *    `maxAge`         - MaxAge to be passed in Cache-Control header.
  *    `prefix`         - (String) It will tell the sass middleware that any request file will always be prefixed with `<prefix>` and this prefix should be ignored.
+ *    `ext`            - (String) Checks against this regex for extention matching. Defaults to: /\.css$/ ("*.css")
  *    `response`       - `[true | false]`, true by default. To write output directly to response instead of to a file.
  *    `root`           - (String) A base path for both source and destination directories.
 
