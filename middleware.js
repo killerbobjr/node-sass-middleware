@@ -1,6 +1,6 @@
 'use strict()';
 
-var sass = require('node-sass'),
+var	sass = require('node-sass'),
 	util = require('util'),
 	fs = require('fs'),
 	url = require('url'),
@@ -102,293 +102,294 @@ module.exports = function(options)
 
 	//Allow custom log function or default one
 	var log = options.log || function(severity, key, val, text)
-	{
-		if(!debug && severity === 'debug')
-		{ // skip debug when debug is off
-			return;
-		}
-
-		text = text || '';
-
-		if(severity === 'error')
 		{
-			console.error('[sass]  \x1B[90m%s:\x1B[0m \x1B[36m%s %s\x1B[0m', key, val, text);
-		}
-		else
-		{
-			console.log('[sass]  \x1B[90m%s:\x1B[0m \x1B[36m%s %s\x1B[0m', key, val, text);
-		}
-	};
-
-	// Default compile callback
-	options.compile = options.compile || function()
-	{
-		return sass;
-	};
-
-	// Middleware
-	return function sass(req, res, next)
-	{
-		var sassMiddlewareError = null;
-
-		// This function will be called if something goes wrong
-		var error = function(err, errorMessage)
-		{
-			log('error', 'error', errorMessage || err);
-
-			if(options.error)
+			if(!debug && severity === 'debug')
 			{
-				options.error(err);
+				// skip debug when debug is off
+				return;
 			}
 
-			sassMiddlewareError = err;
-		};
+			text = text || '';
 
-		if(req.method !== 'GET' && req.method !== 'HEAD')
-		{
-			return next();
-		}
-
-		var path = url.parse(req.url).pathname;
-
-		if(!ext.test(path))
-		{
-			log('debug', 'skip', path, 'nothing to do');
-			return next();
-		}
-
-		if(options.prefix)
-		{
-			if(path.indexOf(options.prefix) === 0)
+			if(severity === 'error')
 			{
-				path = path.substring(options.prefix.length);
+				console.error('[sass]  \x1B[90m%s:\x1B[0m \x1B[36m%s %s\x1B[0m', key, val, text);
 			}
 			else
 			{
-				log('debug', 'skip', path, 'prefix mismatch');
-				return next();
+				console.log('[sass]  \x1B[90m%s:\x1B[0m \x1B[36m%s %s\x1B[0m', key, val, text);
 			}
-		}
+		};
 
-		var cssPath = join(dest, path),
-			sassPath = join(src, path.replace(ext, sassExtension)),
-			sassDir = dirname(sassPath);
-
-		if(root)
+	// Default compile callback
+	options.compile = options.compile || function()
 		{
-			cssPath = join(root, dest, path.replace(new RegExp('^' + dest), ''));
-			sassPath = join(root, src, path
-				.replace(new RegExp('^' + dest), '')
-				.replace(ext, sassExtension));
-			sassDir = dirname(sassPath);
-		}
+			return sass;
+		};
 
-		log('debug', 'source', sassPath);
-		log('debug', 'dest', options.response ? '<response>' : cssPath);
-
-		// When render is done, respond to the request accordingly
-		var done = function(err, result)
+	// Middleware
+	return function sass(req, res, next)
 		{
-			if(err)
-			{
-				var file = sassPath;
-				if(err.file && err.file !== 'stdin')
+			var sassMiddlewareError = null;
+
+			// This function will be called if something goes wrong
+			var error = function(err, errorMessage)
 				{
-					file = err.file;
-				}
+					log('error', 'error', errorMessage || err);
 
-				var fileLineColumn = file + ':' + err.line + ':' + err.column;
-				var errorMessage = (beep ? '\x07' : '') + '\x1B[31m' + err.message.replace(/^ +/, '') + '\n\nin ' + fileLineColumn + '\x1B[91m';
-
-				error(err, errorMessage);
-				return next(err);
-			}
-
-			var data = result.css;
-
-			log('debug', 'render', options.response ? '<response>' : sassPath);
-
-			if(sourceMap)
-			{
-				log('debug', 'render', this.options.sourceMap);
-			}
-			imports[sassPath] = result.stats.includedFiles;
-
-			var cssDone = true;
-			var sourceMapDone = true;
-
-			function doneWriting()
-			{
-				if(!cssDone || !sourceMapDone)
-				{
-					return;
-				}
-
-				if(options.response === false)
-				{
-					return next(sassMiddlewareError);
-				}
-
-				res.writeHead(200,
-				{
-					'Content-Type': 'text/css',
-					'Cache-Control': 'max-age=' + maxAge
-				});
-				res.end(data);
-			}
-
-			// If response is true, do not write to file
-			if(options.response)
-			{
-				return doneWriting();
-			}
-
-			cssDone = false;
-			sourceMapDone = !sourceMap;
-
-			mkdirp(dirname(cssPath), '0700', function(err)
-			{
-				if(err)
-				{
-					error(err);
-					cssDone = true;
-					return doneWriting();
-				}
-
-				fs.writeFile(cssPath, data, 'utf8', function(err)
-				{
-					log('debug', 'write', cssPath);
-
-					if(err)
+					if(options.error)
 					{
-						error(err);
+						options.error(err);
 					}
 
-					cssDone = true;
-					doneWriting();
-				});
-			});
+					sassMiddlewareError = err;
+				};
 
-			if(sourceMap)
+			if(req.method !== 'GET' && req.method !== 'HEAD')
 			{
-				var sourceMapPath = this.options.sourceMap;
-				mkdirp(dirname(sourceMapPath), '0700', function(err)
+				return next();
+			}
+
+			var path = url.parse(req.url).pathname;
+
+			if(!ext.test(path))
+			{
+				log('debug', 'skip', path, 'nothing to do');
+				return next();
+			}
+
+			if(options.prefix)
+			{
+				if(path.indexOf(options.prefix) === 0)
+				{
+					path = path.substring(options.prefix.length);
+				}
+				else
+				{
+					log('debug', 'skip', path, 'prefix mismatch');
+					return next();
+				}
+			}
+
+			var	cssPath = join(dest, path),
+				sassPath = join(src, path.replace(ext, sassExtension)),
+				sassDir = dirname(sassPath);
+
+			if(root)
+			{
+				cssPath = join(root, dest, path.replace(new RegExp('^' + dest), ''));
+				sassPath = join(root, src, path.replace(new RegExp('^' + dest), '').replace(ext, sassExtension));
+				sassDir = dirname(sassPath);
+			}
+
+			log('debug', 'source', sassPath);
+			log('debug', 'dest', options.response ? '<response>' : cssPath);
+
+			// When render is done, respond to the request accordingly
+			var done = function(err, result)
 				{
 					if(err)
 					{
-						error(err);
-						sourceMapDone = true;
+						var file = sassPath;
+						if(err.file && err.file !== 'stdin')
+						{
+							file = err.file;
+						}
+
+						var fileLineColumn = file + ':' + err.line + ':' + err.column;
+						var errorMessage = (beep ? '\x07' : '') + '\x1B[31m' + err.message.replace(/^ +/, '') + '\n\nin ' + fileLineColumn + '\x1B[91m';
+
+						error(err, errorMessage);
+						return next(err);
+					}
+
+					var data = result.css;
+
+					log('debug', 'render', options.response ? '<response>' : sassPath);
+
+					if(sourceMap)
+					{
+						log('debug', 'render', this.options.sourceMap);
+					}
+					imports[sassPath] = result.stats.includedFiles;
+
+					var cssDone = true;
+					var sourceMapDone = true;
+
+					var	doneWriting = function()
+						{
+							if(!cssDone || !sourceMapDone)
+							{
+								return;
+							}
+
+							if(options.response === false)
+							{
+								return next(sassMiddlewareError);
+							}
+
+							res.writeHead(200,
+								{
+									'Content-Type': 'text/css',
+									'Cache-Control': 'max-age=' + maxAge
+								});
+							res.end(data);
+						};
+
+					// If response is true, do not write to file
+					if(options.response)
+					{
 						return doneWriting();
 					}
 
-					fs.writeFile(sourceMapPath, result.map, 'utf8', function(err)
-					{
-						log('debug', 'write', sourceMapPath);
+					cssDone = false;
+					sourceMapDone = !sourceMap;
 
-						if(err)
+					mkdirp(dirname(cssPath), '0700', function(err)
 						{
-							error(err);
+							if(err)
+							{
+								error(err);
+								cssDone = true;
+								return doneWriting();
+							}
+
+							fs.writeFile(cssPath, data, 'utf8', function(err)
+								{
+									log('debug', 'write', cssPath);
+
+									if(err)
+									{
+										error(err);
+									}
+
+									cssDone = true;
+									doneWriting();
+								});
+						});
+
+					if(sourceMap)
+					{
+						var sourceMapPath = this.options.sourceMap;
+						mkdirp(dirname(sourceMapPath), '0700', function(err)
+							{
+								if(err)
+								{
+									error(err);
+									sourceMapDone = true;
+									return doneWriting();
+								}
+
+								fs.writeFile(sourceMapPath, result.map, 'utf8', function(err)
+									{
+										log('debug', 'write', sourceMapPath);
+
+										if(err)
+										{
+											error(err);
+										}
+
+										sourceMapDone = true;
+										doneWriting();
+									});
+							});
+					}
+				};
+
+			// Compile to cssPath
+			var compile = function()
+				{
+					fs.exists(sassPath, function(exists)
+					{
+						log('debug', 'read', sassPath);
+
+						if(!exists)
+						{
+							log('debug', 'skip', sassPath, 'does not exist');
+							return next();
 						}
 
-						sourceMapDone = true;
-						doneWriting();
+						imports[sassPath] = undefined;
+
+						var style = options.compile();
+
+						var renderOptions = util._extend({}, options);
+
+						renderOptions.file = sassPath;
+						renderOptions.outFile = options.outFile || cssPath;
+						renderOptions.includePaths = [sassDir].concat(options.includePaths || []);
+
+						style.render(renderOptions, done, req);
 					});
-				});
-			}
-		};
+				};
 
-		// Compile to cssPath
-		var compile = function()
-		{
-			fs.exists(sassPath, function(exists)
+			// Force
+			if(force)
 			{
-				log('debug', 'read', sassPath);
-
-				if(!exists)
-				{
-					log('debug', 'skip', sassPath, 'does not exist');
-					return next();
-				}
-
-				imports[sassPath] = undefined;
-
-				var style = options.compile();
-
-				var renderOptions = util._extend(
-				{}, options);
-
-				renderOptions.file = sassPath;
-				renderOptions.outFile = options.outFile || cssPath;
-				renderOptions.includePaths = [sassDir].concat(options.includePaths || []);
-
-				style.render(renderOptions, done, req);
-			});
-		};
-
-		// Force
-		if(force)
-		{
-			return compile();
-		}
-
-		// Re-compile on server restart, disregarding
-		// mtimes since we need to map imports
-		if(!imports[sassPath])
-		{
-			return compile();
-		}
-
-		// Compare mtimes
-		fs.stat(sassPath, function(err, sassStats)
-		{
-			if(err)
-			{ // sassPath can't be accessed, nothing to compile
-				log('debug', 'skip', sassPath, 'is unreadable');
-				return next();
+				return compile();
 			}
 
-			fs.stat(cssPath, function(err, cssStats)
+			// Re-compile on server restart, disregarding
+			// mtimes since we need to map imports
+			if(!imports[sassPath])
 			{
-				if(err)
+				return compile();
+			}
+
+			// Compare mtimes
+			fs.stat(sassPath, function(err, sassStats)
 				{
-					if(err.code === 'ENOENT')
-					{ // CSS has not been compiled, compile it!
-						log('debug', 'compile', cssPath, 'was not found');
-						return compile();
+					if(err)
+					{
+						// sassPath can't be accessed, nothing to compile
+						log('debug', 'skip', sassPath, 'is unreadable');
+						return next();
 					}
 
-					error(err);
-					return next(err);
-				}
-
-				if(sassStats.mtime > cssStats.mtime)
-				{ // Source has changed, compile it
-					log('debug', 'compile', sassPath, 'was modified');
-					return compile();
-				}
-
-				// Already compiled, check imports
-				checkImports(sassPath, cssStats.mtime, function(changed)
-				{
-					if(debug && changed && changed.length)
-					{
-						changed.forEach(function(path)
+					fs.stat(cssPath, function(err, cssStats)
 						{
-							log('debug', 'compile', path, '(import file) was modified');
+							if(err)
+							{
+								if(err.code === 'ENOENT')
+								{
+									// CSS has not been compiled, compile it!
+									log('debug', 'compile', cssPath, 'was not found');
+									return compile();
+								}
+
+								error(err);
+								return next(err);
+							}
+
+							if(sassStats.mtime > cssStats.mtime)
+							{
+								// Source has changed, compile it
+								log('debug', 'compile', sassPath, 'was modified');
+								return compile();
+							}
+
+							// Already compiled, check imports
+							checkImports(sassPath, cssStats.mtime, function(changed)
+								{
+									if(debug && changed && changed.length)
+									{
+										changed.forEach(function(path)
+											{
+												log('debug', 'compile', path, '(import file) was modified');
+											});
+									}
+									if(changed && changed.length)
+									{
+										compile();
+									}
+									else
+									{
+										next();
+									}
+								});
 						});
-					}
-					if(changed && changed.length)
-					{
-						compile();
-					}
-					else
-					{
-						next();
-					}
 				});
-			});
-		});
-	};
+		};
 };
 
 /**
@@ -412,20 +413,20 @@ function checkImports(path, time, fn)
 
 	// examine the imported files (nodes) for each parent sass (path)
 	nodes.forEach(function(imported)
-	{
-		fs.stat(imported, function(err, stat)
 		{
-			// error or newer mtime
-			if(err || stat.mtime >= time)
-			{
-				changed.push(imported);
-			}
-			// decrease pending, if 0 call fn with the changed imports
-			--pending;
-			if(pending === 0)
-			{
-				fn(changed);
-			}
+			fs.stat(imported, function(err, stat)
+				{
+					// error or newer mtime
+					if(err || stat.mtime >= time)
+					{
+						changed.push(imported);
+					}
+					// decrease pending, if 0 call fn with the changed imports
+					--pending;
+					if(pending === 0)
+					{
+						fn(changed);
+					}
+				});
 		});
-	});
 }
